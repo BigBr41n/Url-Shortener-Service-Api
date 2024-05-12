@@ -1,5 +1,6 @@
 import http from "node:http";
 import app from "./app";
+import logger from "./utils/logger";
 
 const PORT = process.env.PORT || 3333;
 
@@ -11,13 +12,13 @@ server.timeout = 5000;
 server.maxHeadersCount = 20;
 
 server.listen(PORT, () => {
-  console.log(`Server is running on port ${PORT}`);
+  logger.info(`Server is running on port ${PORT}`);
 });
 
 server.on("error", (error) => {
-  console.log(error);
+  logger.error(error);
 });
 
 server.on("close", () => {
-  console.log("Server is closed");
+  logger.info("server closed");
 });
