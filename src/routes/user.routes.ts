@@ -4,7 +4,8 @@ import { checkAuth } from "../middlewares/checkAuth";
 import {
   addAvatarController,
   updateController,
-  deleteUser,
+  deleteUserController,
+  getUserController,
 } from "../controllers/user.Controllers";
 
 ////////////////////////////////
@@ -15,7 +16,8 @@ router.post(
   [checkAuth, upload.single("avatar")],
   addAvatarController
 );
+router.get("/:id", getUserController);
 router.patch("/update/", checkAuth, updateController);
-router.delete("/delete", checkAuth, deleteUser);
+router.delete("/delete", checkAuth, deleteUserController);
 
 export default router;

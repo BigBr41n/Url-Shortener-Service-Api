@@ -4,6 +4,7 @@ import {
   uploadAvatar,
   updateUser,
   deleteUserService,
+  getUserService,
 } from "../services/user.service";
 import logger from "../utils/logger";
 
@@ -90,7 +91,7 @@ export const updateController = (
   }
 };
 
-export const deleteUser = async (
+export const deleteUserController = async (
   req: AuthenticatedRequest,
   res: Response,
   next: NextFunction
@@ -107,5 +108,26 @@ export const deleteUser = async (
   } catch (error) {
     logger.error("Error deleting user:", error);
     next(error);
+  }
+};
+
+export const getUserController = (
+  req: Request,
+  res: Response,
+  next: NextFunction
+) => {
+  try {
+    getUserService(req.params.id, (err: HttpError | null, userData: any) => {
+      if (err) {
+        throw new HttpError(err.message, err.code);
+      }
+      res.status(200).json({
+        message: "User fetched successfully",
+        data: userData,
+      });
+    });
+  } catch (error: any) {
+    logger.error("Error getting user:", error);
+    next(new HttpError(error.message, error.code || 500));
   }
 };

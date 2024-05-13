@@ -152,3 +152,21 @@ export const deleteUserService = async (
     return cb(new HttpError("Internal server error", error.code || 500));
   }
 };
+
+export const getUserService = async (
+  userID: string,
+  cb: (err: HttpError | null, userData: any) => void
+) => {
+  try {
+    const user = await User.findById(userID);
+    if (!user) {
+      throw new HttpError("User not found", 404);
+    }
+    //remove password
+    const { password: string, ...cleanUser } = user._doc;
+    cb(null, cleanUser);
+  } catch (error: any) {
+    logger.error(error);
+    return cb(new HttpError("Internal server error", error.code || 500), null);
+  }
+};
