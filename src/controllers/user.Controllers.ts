@@ -7,8 +7,12 @@ import {
 } from "../services/user.service";
 import logger from "../utils/logger";
 
+interface JWT_RESULT {
+  id: string;
+}
+
 interface AuthenticatedRequest extends Request {
-  userData?: Object;
+  userData?: JWT_RESULT;
 }
 
 interface RequestBody {
@@ -63,7 +67,7 @@ export const updateController = (
   next: NextFunction
 ) => {
   try {
-    if (verify(req.body)) {
+    if (!verify(req.body)) {
       throw new HttpError("please fill in all required fields", 400);
     }
 

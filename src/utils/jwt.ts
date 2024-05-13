@@ -1,8 +1,11 @@
 import jwt from "jsonwebtoken";
 import logger from "./logger";
-import { HttpError } from "../models/CustomError";
 
-export function signJwt(object: Object): string | null {
+interface ObjectToSign {
+  id: string;
+}
+
+export function signJwt(object: ObjectToSign): string | null {
   const jwtSecret = process.env.JWT_SECRET?.toString();
 
   try {
@@ -11,7 +14,7 @@ export function signJwt(object: Object): string | null {
       return null;
     }
 
-    const token = jwt.sign({ object }, jwtSecret, { expiresIn: "72h" });
+    const token = jwt.sign(object, jwtSecret, { expiresIn: "72h" });
 
     return token;
   } catch (error) {

@@ -76,6 +76,7 @@ export const loginController = async (
       res.cookie("jwt", data);
       res.status(200).json({
         message: "User logged in successfully",
+        token: data,
       });
     });
   } catch (error) {

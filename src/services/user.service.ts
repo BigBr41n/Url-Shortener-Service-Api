@@ -15,6 +15,10 @@ interface UserData {
   };
 }
 
+interface JWT_RESULT {
+  id: string;
+}
+
 export async function createUser(
   userData: UserData,
   cb: (error: HttpError | null, user: UserData | null) => void
@@ -63,7 +67,7 @@ export async function loginUser(
     if (!passwordMatch) {
       throw new HttpError("Invalid email or password", 401);
     }
-    const token = signJwt(user._id);
+    const token = signJwt({ id: user._id });
     if (token === null) {
       throw new HttpError("Internal server error", 500);
     }
@@ -75,18 +79,22 @@ export async function loginUser(
 }
 
 export const uploadAvatar = async (
-  id: Object | undefined,
+  userId: JWT_RESULT | undefined,
   filename: string,
   cb: (err: HttpError | null, result: string | null) => void
 ) => {
   try {
-    const user = await User.findById(id);
-    if (!user) {
-      throw new HttpError("User not found", 404);
+    if (userId === undefined) {
+      throw new HttpError("INVALID TOKEN", 404);
+    } else {
+      const user = await User.findById(userId.id);
+      if (!user) {
+        throw new HttpError("User not found", 404);
+      }
+      user.avatar = `/avatar/${filename}`;
+      await user.save();
+      cb(null, "success");
     }
-    user.avatar = `/post_pictures/${filename}`;
-    await user.save();
-    cb(null, "success");
   } catch (error: any) {
     logger.error(error.message);
     return cb(new HttpError("Internal server error", error.code || 500), null);
@@ -94,12 +102,12 @@ export const uploadAvatar = async (
 };
 
 export const updateUser = async (
-  id: Object | undefined,
+  userId: JWT_RESULT | undefined,
   userData: any,
   cb: (err: HttpError | null, result: any | null) => void
 ) => {
   try {
-    const user = await User.findById(id);
+    const user = await User.findById(userId?.id);
     if (!user) {
       throw new HttpError("User not found", 404);
     }
@@ -109,7 +117,11 @@ export const updateUser = async (
     user.company.name = userData.company.name;
     user.company.professionalEmail = userData.company.professionalEmail;
     await user.save();
-    cb(null, user);
+
+    //omit the password field
+    const { password, ...userWOPassword } = user._doc;
+
+    cb(null, userWOPassword);
   } catch (error: any) {
     logger.error(error);
     return cb(new HttpError("Internal server error", error.code || 500), null);
@@ -117,15 +129,15 @@ export const updateUser = async (
 };
 
 export const deleteUserService = async (
-  id: Object | undefined,
+  userId: JWT_RESULT | undefined,
   cb: (err: HttpError | null) => void
 ) => {
   try {
-    if (!id) {
+    if (!userId?.id === undefined) {
       throw new HttpError("Invalid user ID", 400);
     }
 
-    const user = await User.findById(id);
+    const user = await User.findById(userId?.id);
     if (!user) {
       throw new HttpError("User not found", 404);
     }

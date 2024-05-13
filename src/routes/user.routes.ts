@@ -15,7 +15,7 @@ router.post(
   [checkAuth, upload.single("avatar")],
   addAvatarController
 );
-router.patch("/update/:id", checkAuth, updateController);
-router.delete("/delete/:id", checkAuth, deleteUser);
+router.patch("/update/", checkAuth, updateController);
+router.delete("/delete", checkAuth, deleteUser);
 
 export default router;
