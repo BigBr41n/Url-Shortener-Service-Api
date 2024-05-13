@@ -2,12 +2,17 @@ import express from "express";
 import cors from "cors";
 import helmet from "helmet";
 import router from "./routes";
+import { connect } from "../src/utils/connect.db";
 
 import { Request, Response, NextFunction } from "express";
 import { HttpError } from "./models/CustomError";
-
+import dotenv from "dotenv";
+dotenv.config();
 //app instance
 const app = express();
+
+//connect to DB
+connect();
 
 //middleware
 app.use(cors());

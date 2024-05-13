@@ -1,18 +1,21 @@
 import express from "express";
+import {
+  registerController,
+  loginController,
+  logoutController,
+} from "../controllers/auth.Controllers";
+import validate from "../middlewares/validateResource";
+import { createUserSchema } from "../schema/register.schema";
+import { loginUserSchema } from "../schema/login.schema";
 
 ////////////////////////////////
 const router = express.Router();
 
 //routes:
 
-// name   : register
-// method : POST
-// route  : api/v1/register
-// status  : UNPROTECTED
-
-router.post("/api/v1/register");
-router.post("/api/v1/login");
-router.post("/api/v1/logout");
-router.post("/api/v1/forgot-password");
+router.post("/register", validate(createUserSchema), registerController);
+router.post("/login", validate(loginUserSchema), loginController);
+router.get("/logout", logoutController);
+//router.post("/api/v1/forgot-password");
 
 export default router;

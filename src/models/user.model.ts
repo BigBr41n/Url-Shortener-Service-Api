@@ -18,7 +18,6 @@ const userSchema = new Schema(
     company: {
       name: { type: String, required: true },
       professionalEmail: { type: String, required: true },
-      require: true,
     },
     shortedUrl: [
       {
