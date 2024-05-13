@@ -94,6 +94,6 @@ export async function logoutController(
   next: NextFunction
 ) {
   // Clear the JWT token stored on the client-side
-  res.clearCookie("jwt"); // Assuming the token is stored in a cookie
+  res.clearCookie("jwt");
   res.status(200).json({ message: "Logout successful" });
 }

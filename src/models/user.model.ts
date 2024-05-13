@@ -15,6 +15,10 @@ const userSchema = new Schema(
       type: String,
       required: true,
     },
+    avatar: {
+      type: String,
+      required: false,
+    },
     company: {
       name: { type: String, required: true },
       professionalEmail: { type: String, required: true },

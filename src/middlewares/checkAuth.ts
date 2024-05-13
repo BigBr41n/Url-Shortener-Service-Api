@@ -11,7 +11,7 @@ export const checkAuth = (
   res: Response,
   next: NextFunction
 ) => {
-  const token = req.cookies().get("jwt");
+  const token = req.cookies["jwt"];
   const secret = process.env.JWT_SECRET?.toString();
 
   if (!token || !secret) {

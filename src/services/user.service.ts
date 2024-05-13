@@ -1,8 +1,8 @@
 import bcrypt from "bcrypt";
 import User from "../models/user.model";
+import Url from "../models/shortUrl.model";
 import { HttpError } from "../models/CustomError";
 import logger from "../utils/logger";
-import jwt from "jsonwebtoken";
 import { signJwt } from "../utils/jwt";
 
 interface UserData {
@@ -73,3 +73,70 @@ export async function loginUser(
     cb(new HttpError(err.message, err.code || 500), null);
   }
 }
+
+export const uploadAvatar = async (
+  id: Object | undefined,
+  filename: string,
+  cb: (err: HttpError | null, result: string | null) => void
+) => {
+  try {
+    const user = await User.findById(id);
+    if (!user) {
+      throw new HttpError("User not found", 404);
+    }
+    user.avatar = `/post_pictures/${filename}`;
+    await user.save();
+    cb(null, "success");
+  } catch (error: any) {
+    logger.error(error.message);
+    return cb(new HttpError("Internal server error", error.code || 500), null);
+  }
+};
+
+export const updateUser = async (
+  id: Object | undefined,
+  userData: any,
+  cb: (err: HttpError | null, result: any | null) => void
+) => {
+  try {
+    const user = await User.findById(id);
+    if (!user) {
+      throw new HttpError("User not found", 404);
+    }
+
+    user.username = userData.username;
+    user.email = userData.email;
+    user.company.name = userData.company.name;
+    user.company.professionalEmail = userData.company.professionalEmail;
+    await user.save();
+    cb(null, user);
+  } catch (error: any) {
+    logger.error(error);
+    return cb(new HttpError("Internal server error", error.code || 500), null);
+  }
+};
+
+export const deleteUserService = async (
+  id: Object | undefined,
+  cb: (err: HttpError | null) => void
+) => {
+  try {
+    if (!id) {
+      throw new HttpError("Invalid user ID", 400);
+    }
+
+    const user = await User.findById(id);
+    if (!user) {
+      throw new HttpError("User not found", 404);
+    }
+
+    for (const element of user.shortedUrl) {
+      await Url.findByIdAndDelete(element);
+    }
+
+    cb(null);
+  } catch (error: any) {
+    logger.error(error);
+    return cb(new HttpError("Internal server error", error.code || 500));
+  }
+};

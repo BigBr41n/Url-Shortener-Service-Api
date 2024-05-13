@@ -1,5 +1,6 @@
 import { Express, NextFunction, Request, Response } from "express";
-import { HttpError } from "./models/CustomError";
+
+import userRoute from "./routes/user.routes";
 import authRoutes from "./routes/auth.route";
 
 function routes(app: Express): void {
@@ -9,6 +10,9 @@ function routes(app: Express): void {
 
   //auth routes
   app.use("/api/v1/auth", authRoutes);
+
+  //user routes
+  app.use("/api/v1/user", userRoute);
 }
 
 export default routes;
