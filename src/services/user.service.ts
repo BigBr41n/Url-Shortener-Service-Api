@@ -4,6 +4,8 @@ import Url from "../models/shortUrl.model";
 import { HttpError } from "../models/CustomError";
 import logger from "../utils/logger";
 import { signJwt } from "../utils/jwt";
+import mailer from "../utils/mailer";
+import crypto from "crypto";
 
 interface UserData {
   username: string;
@@ -21,34 +23,43 @@ interface JWT_RESULT {
 
 export async function createUser(
   userData: UserData,
-  cb: (error: HttpError | null, user: UserData | null) => void
+  cb: (error: HttpError | null, user: string | UserData | null) => void
 ) {
   const { username, email, password: ReqPass, company } = userData;
 
-  // Check if the email is already registered
-  const user = await User.findOne({ email });
-
-  if (user) {
-    throw new HttpError("already registered", 401);
-  }
-
   try {
-    // Hash the password
-    const hashedPassword = await bcrypt.hash(ReqPass, 14);
+    const existingUser = await User.findOne({ email });
+    if (existingUser) {
+      throw new HttpError("This Email Already Exists", 401);
+    }
 
-    // Create a new user
-    const newUser = await User.create({
+    const hashedPassword = await bcrypt.hash(ReqPass, 10);
+
+    // Generate a strong random token using crypto
+    const activationToken = crypto.randomBytes(32).toString("hex");
+
+    //expiration
+    const activeExpires = Date.now() + 1000 * 60 * 60; // 1h
+
+    // Create new user with inactive status and activation token
+    const newUser = new User({
       username,
       email,
       password: hashedPassword,
-      company,
+      isActive: false,
+      activationToken,
+      activeExpires,
     });
 
-    const { password, userWithOutPassword } = newUser._doc;
-    cb(null, userWithOutPassword);
-  } catch (err: any) {
-    logger.error(err.message);
-    cb(new HttpError("Internal server error", err.code || 500), null);
+    await newUser.save();
+
+    // Send activation email
+    await mailer(email, username, activationToken);
+    cb(null, "success , now please activate your email , 1h in your hands");
+  } catch (error: any) {
+    logger.error(error);
+    if (error instanceof HttpError) return cb(error, null);
+    return cb(new HttpError("Internal server error", error.code || 500), null);
   }
 }
 
@@ -73,8 +84,10 @@ export async function loginUser(
     }
 
     cb(null, token);
-  } catch (err: any) {
-    cb(new HttpError(err.message, err.code || 500), null);
+  } catch (error: any) {
+    logger.error(error);
+    if (error instanceof HttpError) return cb(error, null);
+    return cb(new HttpError("Internal server error", error.code || 500), null);
   }
 }
 
@@ -96,7 +109,8 @@ export const uploadAvatar = async (
       cb(null, "success");
     }
   } catch (error: any) {
-    logger.error(error.message);
+    logger.error(error);
+    if (error instanceof HttpError) return cb(error, null);
     return cb(new HttpError("Internal server error", error.code || 500), null);
   }
 };
@@ -124,6 +138,7 @@ export const updateUser = async (
     cb(null, userWOPassword);
   } catch (error: any) {
     logger.error(error);
+    if (error instanceof HttpError) return cb(error, null);
     return cb(new HttpError("Internal server error", error.code || 500), null);
   }
 };
@@ -149,6 +164,7 @@ export const deleteUserService = async (
     cb(null);
   } catch (error: any) {
     logger.error(error);
+    if (error instanceof HttpError) return cb(error);
     return cb(new HttpError("Internal server error", error.code || 500));
   }
 };
@@ -167,6 +183,28 @@ export const getUserService = async (
     cb(null, cleanUser);
   } catch (error: any) {
     logger.error(error);
+    if (error instanceof HttpError) return cb(error, null);
+    return cb(new HttpError("Internal server error", error.code || 500), null);
+  }
+};
+
+export const activateAccountService = async (
+  token: string,
+  cb: (err: HttpError | null, result: any) => void
+) => {
+  try {
+    const user = await User.findOne({
+      activationToken: token,
+      activeExpires: { $gt: Date.now() },
+    });
+    if (!user) throw new HttpError("Invalid or Expired Token", 400);
+
+    user.active = true;
+    await user.save;
+    cb(null, "Your account has been successfully activated!");
+  } catch (error: any) {
+    logger.error(error);
+    if (error instanceof HttpError) return cb(error, null);
     return cb(new HttpError("Internal server error", error.code || 500), null);
   }
 };

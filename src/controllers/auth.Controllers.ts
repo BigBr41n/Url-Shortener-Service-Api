@@ -1,6 +1,11 @@
 import express, { NextFunction, Request, Response } from "express";
 import { HttpError } from "../models/CustomError";
-import { createUser, loginUser } from "../services/user.service";
+import logger from "../utils/logger";
+import {
+  createUser,
+  loginUser,
+  activateAccountService,
+} from "../services/user.service";
 
 interface ReqBody {
   username?: string;
@@ -48,12 +53,41 @@ export const registerController = async (
         throw new HttpError(err.message, err.code);
       }
       res.status(201).json({
-        message: "User created successfully",
-        data,
+        message: data,
       });
     });
   } catch (error) {
-    console.error("Error registering user:", error);
+    logger.error(error);
+    next(error);
+  }
+};
+
+// name   : activate account after registration
+// method : GET
+// route  : api/v1/auth/activate
+// status  : UNPROTECTED
+export const activateAccount = async (
+  req: Request,
+  res: Response,
+  next: NextFunction
+) => {
+  try {
+    const { token } = req.query as { token: string };
+    if (!token) throw new HttpError("No Token", 400);
+
+    activateAccountService(
+      token,
+      (err: HttpError | null, result: string | null) => {
+        if (err) {
+          throw new HttpError(err.message, err.code);
+        }
+        res.status(200).json({
+          message: result,
+        });
+      }
+    );
+  } catch (error) {
+    logger.error(error);
     next(error);
   }
 };
@@ -80,7 +114,7 @@ export const loginController = async (
       });
     });
   } catch (error) {
-    console.error("Error login user:", error);
+    logger.error(error);
     next(error);
   }
 };

@@ -19,6 +19,12 @@ const userSchema = new Schema(
       type: String,
       required: false,
     },
+    active: {
+      type: Boolean,
+      default: false,
+    },
+    activeToken: String,
+    activeExpires: Date,
     company: {
       name: { type: String, required: true },
       professionalEmail: { type: String, required: true },
