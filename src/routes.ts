@@ -2,6 +2,7 @@ import { Express, NextFunction, Request, Response } from "express";
 
 import userRoute from "./routes/user.routes";
 import authRoutes from "./routes/auth.route";
+import urlRoute from "./routes/url.routes";
 
 function routes(app: Express): void {
   app.get("/api/v1/healthCheck", (req: Request, res: Response) =>
@@ -13,6 +14,9 @@ function routes(app: Express): void {
 
   //user routes
   app.use("/api/v1/user", userRoute);
+
+  //url routes
+  app.use("/api/v1/url", urlRoute);
 }
 
 export default routes;

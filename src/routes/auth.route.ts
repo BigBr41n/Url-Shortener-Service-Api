@@ -18,6 +18,11 @@ router.post("/register", validate(createUserSchema), registerController);
 router.post("/login", validate(loginUserSchema), loginController);
 router.get("/logout", logoutController);
 router.get("/activate", activateAccount);
-//router.post("/api/v1/forgot-password");
+
+//TODO:
+/* 
+router.post("/change-password", checkAuth, changePasswordController);
+router.post("/forgot-password", forgotPasswordController);
+ */
 
 export default router;

@@ -8,12 +8,8 @@ import {
 } from "../services/user.service";
 import logger from "../utils/logger";
 
-interface JWT_RESULT {
-  id: string;
-}
-
 interface AuthenticatedRequest extends Request {
-  userData?: JWT_RESULT;
+  userData?: { id: string };
 }
 
 interface RequestBody {

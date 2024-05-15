@@ -14,6 +14,11 @@ const shortedUrlSchema = new Schema(
       type: String,
       required: true,
     },
+    alias: {
+      type: String,
+      required: true,
+      unique: true,
+    },
     totalClicks: {
       type: Number,
       default: 0,
