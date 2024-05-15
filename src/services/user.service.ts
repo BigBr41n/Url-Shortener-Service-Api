@@ -6,6 +6,7 @@ import logger from "../utils/logger";
 import { signJwt } from "../utils/jwt";
 import mailer from "../utils/mailer";
 import crypto from "crypto";
+import { ERROR_TO_RETURN } from "./url.services";
 
 interface UserData {
   username: string;
@@ -207,6 +208,34 @@ export const activateAccountService = async (
     user.active = true;
     await user.save;
     cb(null, "Your account has been successfully activated!");
+  } catch (error: any) {
+    logger.error(error);
+    if (error instanceof HttpError) return cb(error, null);
+    return cb(new HttpError("Internal server error", error.code || 500), null);
+  }
+};
+
+export const forgotPasswordService = async (
+  email: string,
+  cb: (err: ERROR_TO_RETURN, result: any) => void
+) => {
+  try {
+    const user = await User.findOne({ email });
+    if (!user) throw new HttpError("Invalid Email!", 200);
+
+    // Generate a strong random token using crypto
+    const changePassToken = crypto.randomBytes(32).toString("hex");
+
+    //expiration
+    const changePassTokenExpires = Date.now() + 1000 * 60 * 60; // 1h
+
+    user.changePassToken = changePassToken;
+    user.changePassTokenExpires = changePassTokenExpires;
+
+    user.save();
+
+    await mailer(email, user.username, changePassToken);
+    cb(null, "success , now please change your password , 1h in your hands");
   } catch (error: any) {
     logger.error(error);
     if (error instanceof HttpError) return cb(error, null);

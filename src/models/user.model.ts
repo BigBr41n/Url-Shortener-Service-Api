@@ -25,6 +25,8 @@ const userSchema = new Schema(
     },
     activeToken: String,
     activeExpires: Date,
+    changePassToken: String,
+    changePassExpires: Date,
     company: {
       name: { type: String, required: true },
       professionalEmail: { type: String, required: true },

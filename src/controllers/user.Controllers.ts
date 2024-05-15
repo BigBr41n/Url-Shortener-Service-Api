@@ -5,8 +5,10 @@ import {
   updateUser,
   deleteUserService,
   getUserService,
+  forgotPasswordService,
 } from "../services/user.service";
 import logger from "../utils/logger";
+import { ERROR_TO_RETURN } from "../services/url.services";
 
 interface AuthenticatedRequest extends Request {
   userData?: { id: string };
@@ -121,6 +123,31 @@ export const getUserController = (
       res.status(200).json({
         message: "User fetched successfully",
         data: userData,
+      });
+    });
+  } catch (error: any) {
+    logger.error("Error getting user:", error);
+    next(new HttpError(error.message, error.code || 500));
+  }
+};
+
+export const forgotPasswordController = (
+  req: Request,
+  res: Response,
+  next: NextFunction
+) => {
+  try {
+    const { email } = req.body;
+    if (!email) {
+      throw new HttpError("Please provide an email", 400);
+    }
+
+    forgotPasswordService(email, (err: ERROR_TO_RETURN, result: any) => {
+      if (err) {
+        throw new HttpError(err.message, err.code);
+      }
+      res.status(200).json({
+        message: "Please check your email for further instructions",
       });
     });
   } catch (error: any) {
