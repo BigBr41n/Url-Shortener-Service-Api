@@ -145,6 +145,7 @@ export const updateUser = async (
 
 export const deleteUserService = async (
   userId: JWT_RESULT | undefined,
+  password: string,
   cb: (err: HttpError | null) => void
 ) => {
   try {
@@ -156,6 +157,10 @@ export const deleteUserService = async (
     if (!user) {
       throw new HttpError("User not found", 404);
     }
+
+    const isMatch = bcrypt.compare(password, user.password);
+
+    if (!isMatch) throw new HttpError("Invalid password", 400);
 
     for (const element of user.shortedUrl) {
       await Url.findByIdAndDelete(element);

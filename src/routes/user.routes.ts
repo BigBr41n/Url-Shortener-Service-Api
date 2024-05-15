@@ -8,6 +8,10 @@ import {
   getUserController,
 } from "../controllers/user.Controllers";
 
+import { deleteUserSchema } from "../schema/user/deleteUser.schema";
+import validate from "../middlewares/validateResource";
+import { updateUserSchema } from "../schema/user/updateUser.schema";
+
 ////////////////////////////////
 const router = express.Router();
 
@@ -17,8 +21,16 @@ router.post(
   addAvatarController
 );
 router.get("/:id", getUserController);
-router.patch("/update/", checkAuth, updateController);
-router.delete("/delete", checkAuth, deleteUserController);
+router.patch(
+  "/update/",
+  [validate(updateUserSchema), checkAuth],
+  updateController
+);
+router.delete(
+  "/delete",
+  [validate(deleteUserSchema), checkAuth],
+  deleteUserController
+);
 
 //TODO :
 /*

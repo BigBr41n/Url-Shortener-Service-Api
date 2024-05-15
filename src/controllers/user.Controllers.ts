@@ -93,7 +93,8 @@ export const deleteUserController = async (
   next: NextFunction
 ) => {
   try {
-    deleteUserService(req.userData, (err: HttpError | null) => {
+    const password = req.body.password;
+    deleteUserService(req.userData, password, (err: HttpError | null) => {
       if (err) {
         throw new HttpError(err.message, err.code);
       }
