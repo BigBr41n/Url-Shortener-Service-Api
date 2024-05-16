@@ -32,9 +32,4 @@ router.delete(
   deleteUserController
 );
 
-//TODO :
-/*
-router.get("/analytics", checkAuth, analyticsController);
-*/
-
 export default router;

@@ -53,9 +53,14 @@ export const createShortUrlService = async (
     const user = await User.findById(userId?.id);
     if (!user) throw new HttpError("User Not Found !", 404);
 
+    logger.info("first print");
+    logger.info(user);
+
     // Generate unique short URL
     let shortUrl;
     if (url.aliasProvided) {
+      logger.info("alias provided");
+      logger.info(url.aliasProvided);
       // Check if the provided alias already exists
       const existingUrl = await Url.findOne({ alias: url.aliasProvided });
       if (existingUrl) {
@@ -65,19 +70,24 @@ export const createShortUrlService = async (
           409
         );
       } else {
+        logger.info("before creating");
         const newShortedUrl = await Url.create({
-          user: userId.id,
+          user: user._id,
           originalUrl: url.url,
           alias: url.aliasProvided,
           ShortedUrl: `https://${process.env.DOMAIN}/${url.aliasProvided}`,
         });
+        logger.info(newShortedUrl);
 
         //saving the new shortedUrl id to the users Array
+        logger.info(user.shortedUrl);
         user.shortedUrl.push(newShortedUrl._id);
+        logger.info(user.shortedUrl);
         await user.save();
+        logger.info(user);
 
         //returning back the new shortedUrl
-        cb(null, newShortedUrl);
+        return cb(null, newShortedUrl);
       }
     }
 

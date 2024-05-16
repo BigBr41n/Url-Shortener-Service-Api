@@ -13,9 +13,10 @@ export const sendActivationEmail = async (
 ) => {
   // Replace with your email service configuration
   const transporter: Transporter = nodemailer.createTransport({
+    service: process.env.SERVICE_EMAIL as string,
     host: process.env.EMAIL_HOST as string,
     port: Number(process.env.EMAIL_PORT),
-    secure: false, // Adjust based on your SMTP server configuration
+    secure: true, //
     auth: {
       user: process.env.EMAIL,
       pass: process.env.EMAIL_PASSWORD,
@@ -25,9 +26,9 @@ export const sendActivationEmail = async (
   const emailTemplate = ({ activationToken, username }: EmailTemplateProps) => {
     // Create a well-formatted email template with activation link
     return `
-      <h1>Welcome to Your App, ${username}!</h1>
+      <h1>Welcome to ${process.env.DOMAIN}, ${username}!</h1>
       <p>Click the link below to activate your account:</p>
-      <a href="http://${process.env.DOMAIN}/activate?token=${activationToken}">Activate Account</a>
+      <a href="http://${process.env.DOMAIN}/api/v1/auth/activate?token=${activationToken}">Activate Account</a>
     `;
   };
 
@@ -42,7 +43,7 @@ export const sendActivationEmail = async (
     await transporter.sendMail(mailOptions);
     logger.info(`Activation email sent to ${email}`);
   } catch (err) {
-    logger.error("Error sending activation email:", err);
+    logger.error(err);
   }
 };
 

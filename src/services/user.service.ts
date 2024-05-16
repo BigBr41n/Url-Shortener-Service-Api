@@ -49,6 +49,7 @@ export async function createUser(
       password: hashedPassword,
       isActive: false,
       activationToken,
+      company,
       activeExpires,
     });
 
@@ -56,6 +57,7 @@ export async function createUser(
 
     // Send activation email
     await mailer(email, username, activationToken);
+    logger.info("out");
     cb(null, "success , now please activate your email , 1h in your hands");
   } catch (error: any) {
     logger.error(error);
@@ -199,6 +201,7 @@ export const activateAccountService = async (
   cb: (err: HttpError | null, result: any) => void
 ) => {
   try {
+    logger.info(token);
     const user = await User.findOne({
       activationToken: token,
       activeExpires: { $gt: Date.now() },
@@ -206,7 +209,7 @@ export const activateAccountService = async (
     if (!user) throw new HttpError("Invalid or Expired Token", 400);
 
     user.active = true;
-    await user.save;
+    await user.save();
     cb(null, "Your account has been successfully activated!");
   } catch (error: any) {
     logger.error(error);

@@ -23,7 +23,7 @@ const userSchema = new Schema(
       type: Boolean,
       default: false,
     },
-    activeToken: String,
+    activationToken: String,
     activeExpires: Date,
     changePassToken: String,
     changePassExpires: Date,

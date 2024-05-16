@@ -37,4 +37,4 @@ const shortedUrlSchema = new Schema(
   { timestamps: true }
 );
 
-export default models.User || model("Url", shortedUrlSchema);
+export default models.Url || model("Url", shortedUrlSchema);
