@@ -13,14 +13,22 @@ import { forgotPasswordController } from "../controllers/user.Controllers";
 import { forgotPasswordSchema } from "../schema/auth/forgotPassword.schema";
 
 ////////////////////////////////
+// Initialize router
 const router = express.Router();
 
-//routes:
-
+//Route to register and create user new account
 router.post("/register", validate(createUserSchema), registerController);
+
+//Route to login to the  activated account
 router.post("/login", validate(loginUserSchema), loginController);
+
+//Route to logout from the account
 router.get("/logout", logoutController);
+
+//Route to activate the account after register and get the activation email
 router.get("/activate", validate(activateAccountSchema), activateAccount);
+
+//Route to reset the password
 router.post(
   "/forgot-password",
   validate(forgotPasswordSchema),

@@ -10,10 +10,12 @@ import {
 import logger from "../utils/logger";
 import { ERROR_TO_RETURN } from "../services/url.services";
 
+//the coming request should have a user id the decoded using jwt verify function
 interface AuthenticatedRequest extends Request {
   userData?: { id: string };
 }
 
+//data coming in request body
 interface RequestBody {
   username?: string;
   email?: string;
@@ -31,6 +33,10 @@ function verify(body: RequestBody) {
   return true;
 }
 
+// description   : upload an avatar to the user profile
+// method        : POST
+// route         : api/v1/user/upload-avatar/:id
+// status        : PROTECTED
 export const addAvatarController = async (
   req: AuthenticatedRequest,
   res: Response,
@@ -60,6 +66,10 @@ export const addAvatarController = async (
   }
 };
 
+// description   : update the user information
+// method        : PATCH
+// route         : api/v1/user/update  (//no need to pass the id here because the user should be logged in)
+// status        : PROTECTED
 export const updateController = (
   req: AuthenticatedRequest,
   res: Response,
@@ -89,6 +99,10 @@ export const updateController = (
   }
 };
 
+// description   : delete the user account
+// method        : DELETE
+// route         : api/v1/user/delete
+// status        : PROTECTED
 export const deleteUserController = async (
   req: AuthenticatedRequest,
   res: Response,
@@ -110,6 +124,10 @@ export const deleteUserController = async (
   }
 };
 
+// description   : GET THE USER PROFILE
+// method        : GET
+// route         : api/v1/user/:id
+// status        : UNPROTECTED
 export const getUserController = (
   req: Request,
   res: Response,
@@ -131,6 +149,10 @@ export const getUserController = (
   }
 };
 
+// description   : to reset password if the user is not logged in
+// method        : POST
+// route         : api/v1/auth/forgot-password
+// status        : UNPROTECTED
 export const forgotPasswordController = (
   req: Request,
   res: Response,

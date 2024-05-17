@@ -17,7 +17,10 @@ interface AuthenticatedRequest extends Request {
   userData?: { id: string };
 }
 
-// Controller to create a short URL for a given long URL
+// description  : shorten the long URL
+// method       : POST
+// route        : api/v1/url/shorten
+// status       : PROTECTED
 export const createShortUrlController = (
   req: AuthenticatedRequest,
   res: Response,
@@ -45,7 +48,10 @@ export const createShortUrlController = (
   }
 };
 
-// Controller to handle requests to a short URL and redirect users to the original long URL
+// description : Controller to handle requests to a short URL and redirect users to the original long URL
+// method      : GET
+// route       : api/v1/url/redirect/:shortCode
+// status      : UNPROTECTED
 export const redirectController = (
   req: Request,
   res: Response,
@@ -73,7 +79,10 @@ export const redirectController = (
   }
 };
 
-// Controller to retrieve analytics data for a specific short URL
+// description : Controller to retrieve analytics data for a specific short URL
+// method      : GET
+// route       : api/v1/url/:shortCode/analytics
+// status      : PROTECTED
 export const getShortUrlAnalyticsController = (
   req: AuthenticatedRequest,
   res: Response,
@@ -103,7 +112,10 @@ export const getShortUrlAnalyticsController = (
   }
 };
 
-// Controller to update properties of a short URL
+// description : Controller to update properties of a short URL
+// method      : PATCH
+// route       : api/v1/url/:shortCode/update
+// status      : PROTECTED
 export const updateShortUrlController = (
   req: AuthenticatedRequest,
   res: Response,
@@ -134,7 +146,10 @@ export const updateShortUrlController = (
   }
 };
 
-// Controller to delete a short URL
+// description : Controller to delete a short URL
+// method      : DELETE
+// route       : api/v1/url/:shortCode/delete
+// status      : PROTECTED
 export const deleteShortUrlController = (
   req: AuthenticatedRequest,
   res: Response,
@@ -164,7 +179,10 @@ export const deleteShortUrlController = (
   }
 };
 
-// Controller to retrieve a list of short URLs created by the authenticated user
+// description : Controller to retrieve a list of short URLs created by the authenticated user
+// method      : GET
+// route       : api/v1/url/my-short-urls
+// status      : PROTECTED
 export const listUserShortUrlsController = (
   req: AuthenticatedRequest,
   res: Response,
@@ -189,7 +207,10 @@ export const listUserShortUrlsController = (
   }
 };
 
-// Controller to generate a QR code for a short URL
+// description : Controller to generate a QR code for a short URL
+// method      : GET
+// route       : api/v1/url/qr-code?url="url"
+// status      : UNPROTECTED
 export const generateQRCodeController = (
   req: Request,
   res: Response,

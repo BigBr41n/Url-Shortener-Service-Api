@@ -7,6 +7,7 @@ import {
   activateAccountService,
 } from "../services/user.service";
 
+//Data that should be received in the body
 interface ReqBody {
   username?: string;
   email?: string;
@@ -22,6 +23,7 @@ interface ReqBody {
 }
 
 //verify if the body has the required parameters
+//even i did a input validation using zod as a middleware and created the schema for each route
 const verify = (body: ReqBody, usage: string): boolean => {
   if (usage === "register") {
     const { username, email, password, company } = body;
@@ -37,10 +39,10 @@ const verify = (body: ReqBody, usage: string): boolean => {
   return true;
 };
 
-// name   : register
-// method : POST
-// route  : api/v1/auth/register
-// status  : UNPROTECTED
+// description   : register a new user
+// method        : POST
+// route         : api/v1/auth/register
+// status        : UNPROTECTED
 export const registerController = async (
   req: Request,
   res: Response,
@@ -62,10 +64,10 @@ export const registerController = async (
   }
 };
 
-// name   : activate account after registration
-// method : GET
-// route  : api/v1/auth/activate
-// status  : UNPROTECTED
+// description   : activate account after registration
+// method        : GET
+// route         : api/v1/auth/activate
+// status        : UNPROTECTED
 export const activateAccount = async (
   req: Request,
   res: Response,
@@ -92,10 +94,10 @@ export const activateAccount = async (
   }
 };
 
-// name   : login
-// method : POST
-// route  : api/v1/auth/login
-// status  : UNPROTECTED
+// description   : login the registered user
+// method        : POST
+// route         : api/v1/auth/login
+// status        : UNPROTECTED
 export const loginController = async (
   req: Request,
   res: Response,
@@ -119,10 +121,10 @@ export const loginController = async (
   }
 };
 
-// name   : logout
-// method : GET
-// route  : api/v1/auth/logout
-// status  : UNPROTECTED
+// description   : logout
+// method        : GET
+// route         : api/v1/auth/logout
+// status        : UNPROTECTED
 export async function logoutController(
   req: Request,
   res: Response,

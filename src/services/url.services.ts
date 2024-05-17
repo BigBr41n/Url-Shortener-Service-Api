@@ -119,7 +119,6 @@ export const getOriginalUrlService = async (
   cb: (err: ERROR_TO_RETURN, data: string | null) => void
 ) => {
   try {
-    logger.error("here in the ORIGINS");
     //search for the original
     const originalUrl = await Url.findOne({ alias: shortedUrl });
     if (!originalUrl) throw new HttpError("Url Not Found", 404);

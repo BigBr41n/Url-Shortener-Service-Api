@@ -26,6 +26,7 @@ import validate from "../middlewares/validateResource";
 const router = Router();
 
 // Route to create a short URL for a given long URL
+//PROTECTED ROUTE
 router.post(
   "/shorten",
   [validate(shortenUrlSchema), checkAuth],
@@ -33,6 +34,7 @@ router.post(
 );
 
 // Route to handle requests to a short URL and redirect users to the original long URL
+// UNPROTECTED ROUTE
 router.get(
   "/redirect/:shortCode",
   validate(redirectUrlSchema),
@@ -40,6 +42,7 @@ router.get(
 );
 
 // Route to retrieve analytics data for a specific short URL
+// PROTECTED ROUTE
 router.get(
   "/:shortCode/analytics",
   [validate(analyticsSchema), checkAuth],
@@ -47,6 +50,7 @@ router.get(
 );
 
 // Route to update properties of a short URL
+// PROTECTED ROUTE
 router.patch(
   "/:shortCode/update",
   [validate(updateUrlSchema), checkAuth],
@@ -54,6 +58,7 @@ router.patch(
 );
 
 // Route to delete a short URL
+// PROTECTED ROUTE
 router.delete(
   "/:shortCode/delete",
   [validate(deleteUrlSchema), checkAuth],
@@ -61,9 +66,11 @@ router.delete(
 );
 
 // Route to retrieve a list of short URLs created by the authenticated user
+// PROTECTED ROUTE
 router.get("/my-short-urls", checkAuth, listUserShortUrlsController);
 
 // Route to generate a QR code for a short URL
+// UNPROTECTED ROUTE
 router.get("/qr-code", validate(QrCodeUrlSchema), generateQRCodeController);
 
 export default router;
