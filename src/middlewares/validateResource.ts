@@ -13,7 +13,7 @@ const validate =
       });
       next();
     } catch (error: any) {
-      next(new HttpError(error.message, 500));
+      next(new HttpError(error.message, 400));
     }
   };
 

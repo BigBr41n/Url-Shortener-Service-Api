@@ -49,7 +49,8 @@ export const registerController = async (
   next: NextFunction
 ) => {
   try {
-    verify(req.body, "register");
+    if (!verify(req.body, "register"))
+      throw new HttpError("please fill in all required fields", 400);
     await createUser(req.body, (err: HttpError | null, data: any | null) => {
       if (err) {
         throw new HttpError(err.message, err.code);
