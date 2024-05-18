@@ -12,6 +12,10 @@ import { activateAccountSchema } from "../schema/auth/activateAccount.schema";
 import { forgotPasswordController } from "../controllers/user.Controllers";
 import { forgotPasswordSchema } from "../schema/auth/forgotPassword.schema";
 
+import { checkAuth } from "../middlewares/checkAuth";
+import { changePasswordController } from "../controllers/auth.Controllers";
+import { changePassSchema } from "../schema/auth/changePassword.schema";
+
 ////////////////////////////////
 // Initialize router
 const router = express.Router();
@@ -35,10 +39,10 @@ router.post(
   forgotPasswordController
 );
 
-//TODO:
-/* 
-router.post("/change-password", checkAuth, changePasswordController);
-
- */
+router.post(
+  "/change-password",
+  [validate(changePassSchema), checkAuth],
+  changePasswordController
+);
 
 export default router;

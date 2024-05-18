@@ -5,7 +5,16 @@ import {
   createUser,
   loginUser,
   activateAccountService,
+  changePasswordService,
 } from "../services/user.service";
+
+interface AuthenticatedRequest extends Request {
+  userData?: { id: string };
+}
+
+interface JWT_RESULT {
+  id: string;
+}
 
 //Data that should be received in the body
 interface ReqBody {
@@ -135,3 +144,37 @@ export async function logoutController(
   res.clearCookie("jwt");
   res.status(200).json({ message: "Logout successful" });
 }
+
+interface data {
+  oldPass: string;
+  newPass: string;
+}
+
+export const changePasswordController = (
+  req: AuthenticatedRequest,
+  res: Response,
+  next: NextFunction
+) => {
+  try {
+    const data: data = {
+      oldPass: req.body.oldPassword,
+      newPass: req.body.password,
+    };
+
+    changePasswordService(
+      req.userData,
+      data,
+      (err: HttpError | null | undefined, result: any) => {
+        if (err) {
+          throw new HttpError(err.message, err.code);
+        }
+        res.status(200).json({
+          message: result,
+        });
+      }
+    );
+  } catch (error) {
+    logger.error(error);
+    next(error);
+  }
+};

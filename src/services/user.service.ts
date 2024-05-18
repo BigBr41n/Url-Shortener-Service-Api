@@ -7,6 +7,7 @@ import { signJwt } from "../utils/jwt";
 import mailer from "../utils/mailer";
 import crypto from "crypto";
 import { ERROR_TO_RETURN } from "./url.services";
+import { AnyExpression } from "mongoose";
 
 interface UserData {
   username: string;
@@ -239,6 +240,29 @@ export const forgotPasswordService = async (
 
     await mailer(email, user.username, changePassToken);
     cb(null, "success , now please change your password , 1h in your hands");
+  } catch (error: any) {
+    logger.error(error);
+    if (error instanceof HttpError) return cb(error, null);
+    return cb(new HttpError("Internal server error", error.code || 500), null);
+  }
+};
+
+export const changePasswordService = async (
+  userId: JWT_RESULT | undefined,
+  data: { oldPass: string; newPass: string },
+  cb: (err: ERROR_TO_RETURN, result: any) => void
+) => {
+  try {
+    const user = await User.findById(userId?.id);
+    if (!user) throw new HttpError("User Not Found", 404);
+
+    if (data!.oldPass === user.password)
+      throw new HttpError("Invalid Password", 401);
+
+    user.password = data!.newPass;
+    user.save();
+
+    cb(null, "password updated successfully");
   } catch (error: any) {
     logger.error(error);
     if (error instanceof HttpError) return cb(error, null);
