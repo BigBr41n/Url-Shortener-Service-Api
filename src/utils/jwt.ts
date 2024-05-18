@@ -16,6 +16,15 @@ const publicKey = fs.readFileSync(
   "utf8"
 );
 
+const refreshTokenPrivateKey = fs.readFileSync(
+  path.join(__dirname, "../..", "refTokenPrivate.key"),
+  "utf-8"
+);
+const refreshTokenPublicKey = fs.readFileSync(
+  path.join(__dirname, "../..", "refTokenPublic.key"),
+  "utf-8"
+);
+
 export function signJwt(object: ObjectToSign): string | null {
   const jwtSecret = process.env.JWT_SECRET?.toString();
 
@@ -27,7 +36,7 @@ export function signJwt(object: ObjectToSign): string | null {
 
     const token = jwt.sign(object, privateKey, {
       algorithm: "RS256",
-      expiresIn: "72h",
+      expiresIn: "3h",
     });
 
     return token;
@@ -45,10 +54,29 @@ export function verifyJwt(token: string): any {
     (error: VerifyErrors | null, decoded: any | undefined) => {
       if (error) {
         logger.error(error);
-        return null;
+        return { valid: false, expired: true };
       } else {
-        return decoded;
+        return { valid: true, expired: false, decoded };
       }
     }
   );
+}
+
+export function signRefreshToken(object: ObjectToSign): string {
+  return jwt.sign(object, refreshTokenPrivateKey, {
+    algorithm: "RS256",
+    expiresIn: "7d",
+  });
+}
+
+export function verifyRefreshToken(token: string): any {
+  try {
+    const decoded = jwt.verify(token, refreshTokenPublicKey, {
+      algorithms: ["RS256"],
+    });
+    return { validate: decoded, expired: false };
+  } catch (error) {
+    logger.error(error);
+    return { validate: false, expired: true };
+  }
 }

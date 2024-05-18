@@ -13,8 +13,12 @@ import { forgotPasswordController } from "../controllers/user.Controllers";
 import { forgotPasswordSchema } from "../schema/auth/forgotPassword.schema";
 
 import { checkAuth } from "../middlewares/checkAuth";
-import { changePasswordController } from "../controllers/auth.Controllers";
+import {
+  changePasswordController,
+  refreshTokenController,
+} from "../controllers/auth.Controllers";
 import { changePassSchema } from "../schema/auth/changePassword.schema";
+import { refreshTokenSchema } from "../schema/user/refreshToken.schema";
 
 ////////////////////////////////
 // Initialize router
@@ -43,6 +47,12 @@ router.post(
   "/change-password",
   [validate(changePassSchema), checkAuth],
   changePasswordController
+);
+
+router.post(
+  "/token",
+  [validate(refreshTokenSchema), checkAuth],
+  refreshTokenController
 );
 
 export default router;

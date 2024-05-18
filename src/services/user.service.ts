@@ -3,7 +3,7 @@ import User from "../models/user.model";
 import Url from "../models/shortUrl.model";
 import { HttpError } from "../models/CustomError";
 import logger from "../utils/logger";
-import { signJwt } from "../utils/jwt";
+import { signJwt, signRefreshToken, verifyRefreshToken } from "../utils/jwt";
 import mailer from "../utils/mailer";
 import crypto from "crypto";
 import { ERROR_TO_RETURN } from "./url.services";
@@ -70,7 +70,10 @@ export async function createUser(
 //login user service
 export async function loginUser(
   data: UserData,
-  cb: (err: HttpError | null, data: string | null) => void
+  cb: (
+    err: HttpError | null,
+    data: { token: string; refreshToken: string } | null
+  ) => void
 ) {
   try {
     const { email, password } = data;
@@ -83,11 +86,13 @@ export async function loginUser(
       throw new HttpError("Invalid email or password", 401);
     }
     const token = signJwt({ id: user._id });
+    const refreshToken = signRefreshToken({ id: user._id });
+
     if (token === null) {
       throw new HttpError("Internal server error", 500);
     }
 
-    cb(null, token);
+    cb(null, { token, refreshToken });
   } catch (error: any) {
     logger.error(error);
     if (error instanceof HttpError) return cb(error, null);
@@ -263,6 +268,31 @@ export const changePasswordService = async (
     user.save();
 
     cb(null, "password updated successfully");
+  } catch (error: any) {
+    logger.error(error);
+    if (error instanceof HttpError) return cb(error, null);
+    return cb(new HttpError("Internal server error", error.code || 500), null);
+  }
+};
+
+export const refreshTokenService = async (
+  refreshToken: string,
+  cb: (err: ERROR_TO_RETURN, result: string | null) => void
+) => {
+  try {
+    const result = verifyRefreshToken(refreshToken);
+    if (result.expired) throw new HttpError("Refresh token expired", 403);
+
+    if (!result.expired) {
+      var userId = result.decoded;
+    }
+    const user = await User.findById(userId.id);
+
+    if (!user) throw new HttpError("User not found", 404);
+
+    const accessToken = signJwt({ id: user._id });
+
+    cb(null, accessToken);
   } catch (error: any) {
     logger.error(error);
     if (error instanceof HttpError) return cb(error, null);

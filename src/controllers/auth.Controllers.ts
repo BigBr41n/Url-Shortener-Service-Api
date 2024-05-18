@@ -6,7 +6,9 @@ import {
   loginUser,
   activateAccountService,
   changePasswordService,
+  refreshTokenService,
 } from "../services/user.service";
+import { ERROR_TO_RETURN } from "../services/url.services";
 
 interface AuthenticatedRequest extends Request {
   userData?: { id: string };
@@ -108,6 +110,11 @@ export const activateAccount = async (
 // method        : POST
 // route         : api/v1/auth/login
 // status        : UNPROTECTED
+
+interface Tokens {
+  token: string;
+  refreshToken: string;
+}
 export const loginController = async (
   req: Request,
   res: Response,
@@ -115,14 +122,15 @@ export const loginController = async (
 ) => {
   try {
     verify(req.body, "login");
-    loginUser(req.body, (err: HttpError | null, data: string | null) => {
+    loginUser(req.body, (err: HttpError | null, data: Tokens | null) => {
       if (err) {
         throw new HttpError(err.message, err.code);
       }
-      res.cookie("jwt", data);
+      res.cookie("jwt", data!.token);
       res.status(200).json({
         message: "User logged in successfully",
-        token: data,
+        token: data!.token,
+        refreshToken: data!.refreshToken,
       });
     });
   } catch (error) {
@@ -170,6 +178,32 @@ export const changePasswordController = (
         }
         res.status(200).json({
           message: result,
+        });
+      }
+    );
+  } catch (error) {
+    logger.error(error);
+    next(error);
+  }
+};
+
+export const refreshTokenController = async (
+  req: AuthenticatedRequest,
+  res: Response,
+  next: NextFunction
+) => {
+  try {
+    const refreshToken = req.body.refreshToken;
+    if (!refreshToken) throw new HttpError("No Token", 400);
+
+    refreshTokenService(
+      refreshToken,
+      (err: ERROR_TO_RETURN, accessToken: string | null) => {
+        if (err) {
+          throw new HttpError(err.message, err.code);
+        }
+        res.status(200).json({
+          accessToken,
         });
       }
     );

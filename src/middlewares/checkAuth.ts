@@ -1,6 +1,5 @@
 import { Request, Response, NextFunction } from "express";
 import { HttpError } from "../models/CustomError";
-import jwt, { VerifyErrors, JsonWebTokenError } from "jsonwebtoken";
 import { verifyJwt } from "../utils/jwt";
 
 interface AuthenticatedRequest extends Request {
@@ -23,6 +22,11 @@ export const checkAuth = (
       )
     );
   } else {
-    req.userData = verifyJwt(token);
+    const result = verifyJwt(token);
+    if (result.expired) next(new HttpError("Expired token", 403));
+    if (result.valid) {
+      req.userData = result.decoded;
+      next();
+    }
   }
 };
