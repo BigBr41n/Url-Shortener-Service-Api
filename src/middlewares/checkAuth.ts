@@ -1,6 +1,7 @@
 import { Request, Response, NextFunction } from "express";
 import { HttpError } from "../models/CustomError";
 import jwt, { VerifyErrors, JsonWebTokenError } from "jsonwebtoken";
+import { verifyJwt } from "../utils/jwt";
 
 interface AuthenticatedRequest extends Request {
   userData?: Object;
@@ -22,17 +23,6 @@ export const checkAuth = (
       )
     );
   } else {
-    jwt.verify(
-      token,
-      secret,
-      (error: VerifyErrors | null, decoded: any | undefined) => {
-        if (error instanceof JsonWebTokenError) {
-          next(new HttpError("Authentication failed", 401));
-        } else {
-          req.userData = decoded;
-          next();
-        }
-      }
-    );
+    req.userData = verifyJwt(token);
   }
 };

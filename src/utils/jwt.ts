@@ -1,9 +1,20 @@
-import jwt from "jsonwebtoken";
+import jwt, { VerifyErrors } from "jsonwebtoken";
 import logger from "./logger";
+import fs from "fs";
+import path from "path";
 
 interface ObjectToSign {
   id: string;
 }
+
+const privateKey = fs.readFileSync(
+  path.join(__dirname, "../..", "private.key"),
+  "utf8"
+);
+const publicKey = fs.readFileSync(
+  path.join(__dirname, "../..", "public.key"),
+  "utf8"
+);
 
 export function signJwt(object: ObjectToSign): string | null {
   const jwtSecret = process.env.JWT_SECRET?.toString();
@@ -14,11 +25,30 @@ export function signJwt(object: ObjectToSign): string | null {
       return null;
     }
 
-    const token = jwt.sign(object, jwtSecret, { expiresIn: "72h" });
+    const token = jwt.sign(object, privateKey, {
+      algorithm: "RS256",
+      expiresIn: "72h",
+    });
 
     return token;
   } catch (error) {
     logger.error(error);
     return null;
   }
+}
+
+export function verifyJwt(token: string): any {
+  jwt.verify(
+    token,
+    publicKey,
+    { algorithms: ["RS256"] },
+    (error: VerifyErrors | null, decoded: any | undefined) => {
+      if (error) {
+        logger.error(error);
+        return null;
+      } else {
+        return decoded;
+      }
+    }
+  );
 }
