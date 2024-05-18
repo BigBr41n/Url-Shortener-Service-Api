@@ -74,9 +74,9 @@ export function verifyRefreshToken(token: string): any {
     const decoded = jwt.verify(token, refreshTokenPublicKey, {
       algorithms: ["RS256"],
     });
-    return { validate: decoded, expired: false };
+    return { valid: true, expired: false, decoded };
   } catch (error) {
     logger.error(error);
-    return { validate: false, expired: true };
+    return { valid: false, expired: true };
   }
 }
