@@ -9,6 +9,7 @@ import cookieParser from "cookie-parser";
 import { Request, Response, NextFunction } from "express";
 import { HttpError } from "./models/CustomError";
 import dotenv from "dotenv";
+import { globalLimiter } from "./middlewares/rateLimitter";
 dotenv.config();
 //app instance
 const app = express();
@@ -23,6 +24,7 @@ app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 app.use(cookieParser());
 app.use(express.static(path.join(__dirname, "uploads")));
+app.use(globalLimiter);
 
 //pass the app to the router function
 router(app);
