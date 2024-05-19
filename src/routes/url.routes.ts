@@ -12,6 +12,7 @@ import {
 } from "../controllers/url.Controllers";
 
 import { checkAuth } from "../middlewares/checkAuth";
+import { cacheMiddleware } from "../middlewares/cacheMidd";
 import {
   shortenUrlSchema,
   deleteUrlSchema,
@@ -37,7 +38,7 @@ router.post(
 // UNPROTECTED ROUTE
 router.get(
   "/redirect/:shortCode",
-  validate(redirectUrlSchema),
+  [validate(redirectUrlSchema), cacheMiddleware],
   redirectController
 );
 

@@ -9,6 +9,7 @@ import {
 } from "../services/user.service";
 import logger from "../utils/logger";
 import { ERROR_TO_RETURN } from "../services/url.services";
+import { redisClient } from "../middlewares/cacheMidd";
 
 //the coming request should have a user id the decoded using jwt verify function
 interface AuthenticatedRequest extends Request {
@@ -134,15 +135,24 @@ export const getUserController = (
   next: NextFunction
 ) => {
   try {
-    getUserService(req.params.id, (err: HttpError | null, userData: any) => {
-      if (err) {
-        throw new HttpError(err.message, err.code);
+    getUserService(
+      req.params.id,
+      async (err: HttpError | null, userData: any) => {
+        if (err) {
+          throw new HttpError(err.message, err.code);
+        }
+        const key = req.originalUrl;
+        await redisClient.set(key, JSON.stringify(userData));
+
+        var todayEnd = new Date().setHours(23, 59, 59, 999);
+        redisClient.expireAt(key, todayEnd / 1000);
+
+        res.status(200).json({
+          message: "User fetched successfully",
+          data: userData,
+        });
       }
-      res.status(200).json({
-        message: "User fetched successfully",
-        data: userData,
-      });
-    });
+    );
   } catch (error: any) {
     logger.error("Error getting user:", error);
     next(new HttpError(error.message, error.code || 500));

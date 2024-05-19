@@ -11,6 +11,7 @@ import {
 import { deleteUserSchema } from "../schema/user/deleteUser.schema";
 import validate from "../middlewares/validateResource";
 import { updateUserSchema } from "../schema/user/updateUser.schema";
+import { cacheMiddleware } from "../middlewares/cacheMidd";
 
 ////////////////////////////////
 //Initialization
@@ -26,7 +27,7 @@ router.post(
 
 //Route to get the user profile
 //PROTECTED ROUTE
-router.get("/:id", getUserController);
+router.get("/:id", cacheMiddleware, getUserController);
 
 //Route to update the user profile
 //PROTECTED ROUTE

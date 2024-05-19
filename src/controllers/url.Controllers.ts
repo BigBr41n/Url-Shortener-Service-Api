@@ -12,6 +12,7 @@ import {
 } from "../services/url.services";
 import { ShortedUrl } from "../services/url.services"; //importing the interface to avoid redundancy
 import { ERROR_TO_RETURN } from "../services/url.services"; //importing the error model to be returned
+import { redisClient } from "../middlewares/cacheMidd";
 
 interface AuthenticatedRequest extends Request {
   userData?: { id: string };
@@ -68,6 +69,11 @@ export const redirectController = (
         if (err) {
           throw new HttpError(err.message, err.code);
         }
+        const key = req.params.shortCode;
+        const expiration = 60 * 60; // 1 hour in seconds
+
+        redisClient.set(key, JSON.stringify(data));
+        redisClient.expireAt(key, expiration);
         res.status(200).send(data);
         //res.redirect(data)
       }
