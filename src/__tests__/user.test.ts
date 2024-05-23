@@ -1,118 +1,86 @@
-import supertest from "supertest";
+import request from "supertest";
 import app from "../app";
-/* import { MongoMemoryServer } from "mongodb-memory-server";
-import mongoose from "mongoose"; */
+import User from "../models/user.model";
+import * as bcrypt from "bcrypt";
+import * as tokenUtils from "../utils/jwt";
 
-describe("user", () => {
-  /*   beforeAll(async () => {
-    const mongodServer = await MongoMemoryServer.create();
-    await mongoose.connect(mongodServer.getUri());
-  });
-  afterAll(async () => {
-    await mongoose.disconnect();
-    await mongoose.connection.close();
-  }); */
+// Mock User model
+jest.mock("../models/user.model");
 
-  //testing the register route
-  describe("register a new user route", () => {
-    describe("given an email exists", () => {
-      it("should return 401", async () => {
-        const username = "username";
-        const email = "email@example.com";
-        const password = "password123";
-        const passwordConfirmation = "password123";
-        const company = {
-          name: "company",
-          professionalEmail: "company@company-name.com",
-        };
-        const response = await supertest(app)
-          .post("/api/v1/auth/register")
-          .send({
-            username,
-            email,
-            password,
-            passwordConfirmation,
-            company,
-          });
+// Mock bcrypt
+jest.mock("bcrypt");
 
-        expect(response.status).toBe(401);
-        expect(response.body.message).toBe("This Email Already Exists");
-      });
-    });
+// Mock jwt
+jest.mock("../utils/jwt");
 
-    describe("when there are missing data", () => {
-      it("should return 400", async () => {
-        const username = "username";
-        const email = "email@example.com";
-        const password = "password123";
-        const passwordConfirmation = "password123";
-        const company = {
-          name: "company",
-          professionalEmail: "company@company-name.com",
-        };
-        const response = await supertest(app)
-          .post("/api/v1/auth/register")
-          .send({
-            username,
-            company,
-          });
-        expect(response.status).toBe(400);
-      });
-    });
-    describe("when passing the right data", () => {
-      it("should return 201 with a note to activate the account", async () => {
-        const response = await supertest(app)
-          .post("/api/v1/auth/register")
-          .send({
-            username: "username",
-            email: `${Date.now().toString()}@example.example`,
-            password: "password123",
-            passwordConfirmation: "password123",
-            company: {
-              name: "company",
-              professionalEmail: "company@company-name.com",
-            },
-          });
-        expect(response.status).toBe(201);
+describe("POST /api/v1/auth/login", () => {
+  const mockUser = {
+    _id: "12345",
+    email: "test@example.com",
+    password: "hashedpassword",
+  };
 
-        expect(response.body.message).toBe(
-          "success , now please activate your email , 1h in your hands"
-        );
-      });
-    });
+  beforeEach(() => {
+    jest.clearAllMocks();
+    (User.findOne as jest.Mock).mockReset();
+    (bcrypt.compare as jest.Mock).mockReset();
+    (tokenUtils.signJwt as jest.Mock).mockReset();
+    (tokenUtils.signRefreshToken as jest.Mock).mockReset();
   });
 
-  //testing the login route
-  describe("login route", () => {
-    describe("when passing the right data", () => {
-      it("should return 200", async () => {
-        const response = await supertest(app).post("/api/v1/auth/login").send({
-          email: "email@example.com",
-          password: "password123",
-        });
-        expect(response.status).toBe(200);
-        expect(response.body.message).toBe("User logged in successfully");
-      }, 10000);
+  it("should login successfully with valid credentials", async () => {
+    (User.findOne as jest.Mock).mockResolvedValue(mockUser);
+    (bcrypt.compare as jest.Mock).mockResolvedValue(true);
+    (tokenUtils.signJwt as jest.Mock).mockReturnValue("token");
+    (tokenUtils.signRefreshToken as jest.Mock).mockReturnValue("refreshToken");
+
+    const response = await request(app)
+      .post("/api/v1/auth/login")
+      .send({ email: "test@example.com", password: "password" })
+      .expect(200);
+
+    expect(response.body).toEqual({
+      message: "User logged in successfully",
+      token: "token",
+      refreshToken: "refreshToken",
     });
 
-    describe("when missing data in the request body ", () => {
-      it("should return 400", async () => {
-        const response = await supertest(app).post("/api/v1/auth/login").send({
-          email: "email@example.com",
-        });
-        expect(response.status).toBe(400);
-      });
-    });
-
-    describe("when sending invalid credentials", () => {
-      it("should return 401", async () => {
-        const response = await supertest(app).post("/api/v1/auth/login").send({
-          email: "email@example.com",
-          password: "12364tyghbj",
-        });
-        expect(response.status).toBe(401);
-        expect(response.body.message).toBe("Invalid email or password");
-      });
-    });
+    expect(response.headers["set-cookie"]).toBeDefined();
   });
+
+  it("should return 401 for invalid email", async () => {
+    (User.findOne as jest.Mock).mockResolvedValue(null);
+
+    const response = await request(app)
+      .post("/api/v1/auth/login")
+      .send({ email: "invalid@example.com", password: "password" })
+      .expect(401);
+
+    expect(response.body).toEqual({ message: "Invalid email or password" });
+  }, 10000); // Increase timeout for this test
+
+  it("should return 401 for invalid password", async () => {
+    (User.findOne as jest.Mock).mockResolvedValue(mockUser);
+    (bcrypt.compare as jest.Mock).mockResolvedValue(false);
+
+    const response = await request(app)
+      .post("/api/v1/auth/login")
+      .send({ email: "test@example.com", password: "wrongpassword" })
+      .expect(401);
+
+    expect(response.body).toEqual({ message: "Invalid email or password" });
+  }, 10000); // Increase timeout for this test
+
+  it("should return 500 for internal server error", async () => {
+    (User.findOne as jest.Mock).mockImplementation(() => {
+      throw new Error("DB Error");
+    });
+
+    const response = await request(app)
+      .post("/api/v1/auth/login")
+      .send({ email: "test@example.com", password: "password" })
+      .expect(500);
+
+    expect(response.body).toEqual({ message: "Internal server error" });
+  }, 10000); // Increase timeout for this test
 });

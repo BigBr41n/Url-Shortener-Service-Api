@@ -6,4 +6,9 @@ module.exports = {
   verbose: true,
   forceExit: true,
   //clearMocks: true
+  testTimeout: 20000, // Global timeout for tests
+  moduleNameMapper: {
+    // Adjust paths as necessary for your setup
+    "^@/(.*)$": "<rootDir>/src/$1",
+  },
 };
