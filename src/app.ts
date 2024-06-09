@@ -5,6 +5,8 @@ import router from "./routes";
 import { connect } from "../src/utils/connect.db";
 import path from "path";
 import cookieParser from "cookie-parser";
+import compression from "compression";
+import xss from "xss-clean";
 
 import { Request, Response, NextFunction } from "express";
 import { HttpError } from "./models/CustomError";
@@ -25,6 +27,8 @@ app.use(express.urlencoded({ extended: true }));
 app.use(cookieParser());
 app.use(express.static(path.join(__dirname, "uploads")));
 app.use(globalLimiter);
+app.use(compression());
+app.use(xss());
 
 //pass the app to the router function
 router(app);
